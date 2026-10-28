@@ -124,8 +124,6 @@ section { padding: 32px 0 8px; }
 .presets { display: grid; gap: 8px; margin-top: 12px; }
 .preset { text-align: left; cursor: pointer; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
 .preset[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
-.free { display: flex; gap: 8px; margin-top: 12px; }
-.free input { flex: 1; min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
 .out .lbl { font: 500 11px/1 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 14px; }
 .out .lbl:first-child { margin-top: 0; }
 .out p { margin: 6px 0 0; }
@@ -214,17 +212,12 @@ body.boring .cv { display: block; }
     <section id="translator">
       <div class="sec-head">
         <h2>Enterprise to web3 translator</h2>
-        <p>My last job was taking an enterprise's problem and working out what, if anything, a blockchain should do about it. Pick a problem or type your own.</p>
+        <p>My last job was taking an enterprise's problem and working out what, if anything, a blockchain should do about it. Pick a problem.</p>
       </div>
       <div class="tr">
         <div class="card">
           <div class="eyebrow">Mempool: incoming problems</div>
           <div class="presets" id="presets"></div>
-          <form class="free" id="freeForm">
-            <label for="freeIn" class="eyebrow" style="position:absolute; left:-9999px">Your problem</label>
-            <input id="freeIn" placeholder="e.g. our users lose their keys">
-            <button class="btn" type="submit">Translate</button>
-          </form>
         </div>
         <div class="card out" id="out" aria-live="polite"></div>
       </div>
@@ -484,20 +477,6 @@ body.boring .cv { display: block; }
     b.type = "button"; b.className = "preset"; b.textContent = p.q; b.setAttribute("aria-pressed", "false");
     b.addEventListener("click", function () { showProblem(i); });
     presetsEl.appendChild(b);
-  });
-  document.getElementById("freeForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var text = document.getElementById("freeIn").value.trim(); if (!text) return;
-    var low = text.toLowerCase(), best = -1, score = 0;
-    PROBLEMS.forEach(function (p, i) {
-      var s = p.keys.filter(function (k) { return low.indexOf(k) !== -1; }).length;
-      if (s > score) { score = s; best = i; }
-    });
-    if (best >= 0) { showProblem(best, text); return; }
-    presetsEl.querySelectorAll(".preset").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
-    outEl.innerHTML = '<div class="lbl">Problem</div><p>' + esc(text) + '</p><div class="lbl">Translation</div><div class="verdict">Unconfirmed transaction</div>' +
-      '<p>This one isn\'t in my mempool yet. Email it to me and I\'ll tell you honestly whether a blockchain belongs anywhere near it.</p>' +
-      '<p class="mono" style="font-size:13px">meetthosar@gmail.com</p>';
   });
 
   // ---------- boring mode ----------
