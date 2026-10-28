@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hire Meet #1</title>
+<meta name="description" content="Meet, developer and technical product owner from Pune, as a pull request.">
+<style>
+:root {
+  /* Layout idea: a pull request that merges Meet into your team. White page, GitHub-style greys. */
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --subtle: #f6f8fa;
+  --ink: #1f2328;
+  --muted: #59636e;
+  --line: #d1d9e0;
+  --accent: #0969da;
+  --accent-soft: #ddf4ff;
+  --ok: #1f883d;
+  --ok-soft: #dafbe1;
+  --del: #cf222e;
+  --del-soft: #ffebe9;
+  --display: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body); }
+a { color: var(--accent); text-underline-offset: 3px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+.mono { font-family: var(--mono); }
+
+.top { border-bottom: 1px solid var(--line); background: var(--subtle); }
+.top .wrap { display: flex; align-items: center; gap: 12px; padding-top: 12px; padding-bottom: 12px; font-family: var(--mono); font-size: 14px; flex-wrap: wrap; }
+.repo b { font-weight: 600; }
+.repo span { color: var(--muted); }
+
+.head { padding: 30px 0 16px; }
+h1 { font: 400 clamp(26px, 4vw, 32px)/1.25 var(--display); margin: 0 0 12px; text-wrap: balance; }
+h1 .num { color: var(--muted); font-weight: 600; }
+.meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 15px; }
+.state { display: inline-flex; align-items: center; gap: 6px; background: var(--ok); color: #fff; padding: 5px 12px; border-radius: 999px; font-weight: 700; font-size: 14px; }
+.state.merged { background: #8250df; }
+.branch { font: 400 13px/1 var(--mono); background: var(--accent-soft); color: var(--accent); padding: 4px 7px; border-radius: 5px; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-top: 18px; overflow-x: auto; }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .ct { font: 400 12px/1 var(--mono); background: var(--line); border-radius: 999px; padding: 3px 7px; margin-left: 6px; }
+
+.layout { display: grid; grid-template-columns: 1fr 250px; gap: 28px; padding: 22px 0 60px; }
+.panel { display: none; }
+.panel.on { display: block; }
+
+.comment { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+.comment .ch { background: var(--subtle); padding: 10px 16px; font-size: 14px; color: var(--muted); border-bottom: 1px solid var(--line); }
+.comment .ch b { color: var(--ink); }
+.comment .cb { padding: 16px 20px; }
+.comment h3 { font: 600 20px/1.25 var(--display); padding-bottom: 6px; border-bottom: 1px solid var(--line); margin: 18px 0 6px; }
+.comment h3:first-child { margin-top: 0; }
+.comment ul { margin: 6px 0; padding-left: 20px; }
+.comment p { margin: 6px 0; max-width: 65ch; }
+
+.timeline { position: relative; margin: 8px 0 0 22px; padding-left: 22px; border-left: 2px solid var(--line); }
+.ev { position: relative; padding: 12px 0; font-size: 15px; }
+.ev::before { content: ""; position: absolute; left: -30px; top: 17px; width: 14px; height: 14px; border-radius: 50%; background: var(--panel); border: 2px solid var(--muted); }
+.ev.ok::before { border-color: var(--ok); background: var(--ok); }
+.ev.you::before { border-color: var(--accent); background: var(--accent); }
+.ev .sha { font: 400 12px/1 var(--mono); color: var(--muted); margin-left: 6px; }
+.ev .yr { font: 600 13px/1 var(--mono); color: var(--accent); margin-right: 8px; }
+
+.checks, .diff { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+.check { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: start; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.check:last-child { border-bottom: 0; }
+.tick { width: 20px; height: 20px; border-radius: 50%; background: var(--ok); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 700; margin-top: 2px; }
+.check .d { color: var(--muted); font-size: 13px; }
+.check .t { font: 400 12px/1.8 var(--mono); color: var(--muted); white-space: nowrap; }
+.sum { padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 700; color: var(--ok); }
+
+.file { border-bottom: 1px solid var(--line); }
+.file:last-child { border-bottom: 0; }
+.fname { padding: 10px 16px; font: 600 13px/1 var(--mono); background: var(--subtle); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.fname .stat { color: var(--ok); }
+.fname .stat i { color: var(--del); font-style: normal; }
+.code { overflow-x: auto; }
+.code table { border-collapse: collapse; font: 400 13px/1.7 var(--mono); width: 100%; }
+.code td { padding: 0 12px; white-space: pre; }
+.code td.ln { width: 1%; color: var(--muted); text-align: right; user-select: none; opacity: .7; }
+.code tr.add { background: var(--ok-soft); }
+.code tr.del { background: var(--del-soft); }
+.code tr.add td.sg { color: var(--ok); }
+.code tr.del td.sg { color: var(--del); }
+.code td.sg { width: 1%; padding-right: 0; }
+
+.merge { margin-top: 22px; border: 2px solid var(--ok); border-radius: 10px; background: var(--panel); overflow: hidden; }
+.merge.done { border-color: #8250df; }
+.merge .mrow { display: flex; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); align-items: start; }
+.merge .mrow:last-child { border-bottom: 0; }
+.merge .mrow b { display: block; }
+.merge .mrow span { color: var(--muted); font-size: 14px; }
+.btns { display: flex; gap: 10px; flex-wrap: wrap; padding: 14px 18px; }
+.btn { border: 1px solid var(--ok); background: var(--ok); color: #fff; padding: 9px 16px; border-radius: 7px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block; }
+.btn.ghost { background: var(--panel); color: var(--ink); border-color: var(--line); }
+.btn.purple { background: #8250df; border-color: #8250df; }
+.btn:hover { filter: brightness(1.08); }
+.confirm { display: none; padding: 16px 18px; background: var(--subtle); }
+.confirm.on { display: block; }
+.confirm p { margin: 0 0 10px; }
+.confirm .email { font: 600 18px/1.3 var(--mono); word-break: break-all; }
+
+aside { font-size: 14px; }
+.side { border-bottom: 1px solid var(--line); padding: 12px 0; }
+.side:first-child { padding-top: 0; }
+.side h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 700; }
+.labels { display: flex; flex-wrap: wrap; gap: 6px; }
+.lb { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); }
+.lb.a { background: #fde7c4; color: #7a4a00; border-color: transparent; }
+.lb.b { background: #d8ecff; color: #0d4a86; border-color: transparent; }
+.lb.c { background: #e3dcff; color: #3f2a9e; border-color: transparent; }
+.lb.d { background: #d7f3e3; color: #12643b; border-color: transparent; }
+.lb.e { background: #ffdce3; color: #8c1d33; border-color: transparent; }
+
+footer { color: var(--muted); font-size: 13px; padding-bottom: 40px; }
+
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  aside { order: -1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 16px; }
+}
+@media (max-width: 460px) {
+  aside { grid-template-columns: 1fr; }
+  .check { grid-template-columns: 26px 1fr; }
+  .check .t { grid-column: 2; }
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <span class="repo"><span>your-company /</span> <b>team</b></span>
+    <span style="color:var(--muted)">·</span>
+    <span style="color:var(--muted)">Pull requests</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Hire Meet: add 18 years of web2 and web3 to your team <span class="num" style="font-weight:300">#1</span></h1>
+    <div class="meta">
+      <span class="state" id="state">● Open</span>
+      <span><b style="color:var(--ink)">meet</b> wants to merge <b style="color:var(--ink)">1 engineer</b> into</span>
+      <span class="branch">your-company:main</span> <span>from</span> <span class="branch">pune:open-to-work</span>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-p="conv">Conversation</button>
+      <button class="tab" role="tab" aria-selected="false" data-p="commits">Commits <span class="ct">7</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-p="checks">Checks <span class="ct">6</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-p="files">Files changed <span class="ct">2</span></button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <main>
+      <!-- Conversation -->
+      <div class="panel on" id="p-conv">
+        <div class="comment">
+          <div class="ch"><b>meet</b> opened this pull request · Pune, India</div>
+          <div class="cb">
+            <h3>What this PR does</h3>
+            <p>Adds one developer and technical product owner to your team. I started writing PHP in 2008, spent the last two years at the Algorand Foundation taking custodial wallets into production for Indian organisations, and I'm now looking for the next team.</p>
+            <h3>Changes</h3>
+            <ul>
+              <li><b>Web2:</b> PHP and Laravel full-stack since 2008, Certified Laravel Developer. Built an RPA solution at Adventus.io that automated offer generation.</li>
+              <li><b>Web3:</b> smart contracts in Algorand Python (PuyaPy) with AlgoKit. Custodial wallet infrastructure in production with SEWA, Mann Deshi and Naandi.</li>
+              <li><b>Product:</b> Technical Product Owner for India Enterprises at the Algorand Foundation. Turned enterprise problems into web3 solutions developers could build. Contributed to Intermezzo, the Foundation's custodial wallet product.</li>
+              <li><b>Docs:</b> DevRel contributor from June to 22 Oct 2026, writing pages for the post-quantum update and the Algorand 5.0.0 release.</li>
+            </ul>
+            <h3>Known limitations</h3>
+            <p>Most of my hands-on coding is in PHP and Python. My recent years leaned toward product and integration work more than writing code every day.</p>
+            <h3>How to test</h3>
+            <p>Email <span class="mono">meetthosar@gmail.com</span> and ask me about any line in the diff.</p>
+          </div>
+        </div>
+
+        <div class="timeline" id="timeline"></div>
+
+        <div class="merge" id="merge">
+          <div class="mrow"><span class="tick">✓</span><div><b>All checks have passed</b><span>6 successful checks, see the Checks tab</span></div></div>
+          <div class="mrow"><span class="tick">✓</span><div><b>This branch has no conflicts with the base branch</b><span>Based in Pune, India. Available now.</span></div></div>
+          <div class="btns">
+            <button class="btn" id="mergeBtn" type="button">Merge pull request</button>
+            <button class="btn ghost" id="approveBtn" type="button">Approve</button>
+          </div>
+          <div class="confirm" id="confirm">
+            <p>Merging needs a human on the other side. Send the merge request here:</p>
+            <div class="email">meetthosar@gmail.com</div>
+            <div class="btns" style="padding:12px 0 0">
+              <a class="btn purple" href="mailto:meetthosar@gmail.com?subject=Merging%20PR%20%231">Open email</a>
+              <button class="btn ghost" id="copyBtn" type="button">Copy address</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commits -->
+      <div class="panel" id="p-commits">
+        <div class="timeline" id="commitList" style="margin-top:0"></div>
+      </div>
+
+      <!-- Checks -->
+      <div class="panel" id="p-checks">
+        <div class="checks">
+          <div class="sum">✓ All 6 checks passed</div>
+          <div id="checkList"></div>
+        </div>
+      </div>
+
+      <!-- Files -->
+      <div class="panel" id="p-files">
+        <div class="diff" id="diff"></div>
+      </div>
+    </main>
+
+    <aside>
+      <div class="side"><h4>Reviewers</h4><div id="reviewer">You · <span style="color:var(--muted)">review requested</span></div></div>
+      <div class="side"><h4>Assignees</h4>meet</div>
+      <div class="side"><h4>Labels</h4>
+        <div class="labels">
+          <span class="lb a">web2</span><span class="lb b">web3</span><span class="lb c">product</span><span class="lb d">docs</span><span class="lb e">open-to-work</span>
+        </div>
+      </div>
+      <div class="side"><h4>Milestone</h4>Next role</div>
+      <div class="side"><h4>Location</h4>Pune, Maharashtra, India</div>
+    </aside>
+  </div>
+
+  <footer>A personal page dressed as a pull request. Nothing here touches a real repository.</footer>
+</div>
+
+<script>
+(function () {
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function sha(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return ("0000000" + h.toString(16)).slice(-7); }
+
+  var COMMITS = [
+    ["Genesis", "Add B.E. Computers from Shivaji University"],
+    ["2008", "Init full-stack PHP and Laravel; later certified as a Laravel Developer"],
+    ["2011", "Lead a development team with client-facing work (2011 to 2013)"],
+    ["2015", "Found and run Karyam (2015 to 2020)"],
+    ["2023", "Automate offer generation with RPA at Adventus.io (2023 to 2024)"],
+    ["2024", "Ship custodial wallets with SEWA and Mann Deshi as Engagement Support Engineer, Algorand Foundation"],
+    ["2026", "Technical Product Owner, India: Naandi rollout, Intermezzo, docs for Algorand 5.0.0 and post-quantum"]
+  ];
+  var CHECKS = [
+    ["SEWA", "Custodial wallet infrastructure in production", "Engagement Support Engineer"],
+    ["Mann Deshi", "Custodial wallet infrastructure in production", "Engagement Support Engineer"],
+    ["Naandi", "Custodial wallet infrastructure in production", "Technical Product Owner"],
+    ["Intermezzo", "Contributed to the Foundation's custodial wallet product", "Technical Product Owner"],
+    ["Algorand 5.0.0 docs", "Documentation pages for the protocol release and the post-quantum update", "Jun to Oct 2026"],
+    ["Laravel certification", "Certified Laravel Developer", "web2"]
+  ];
+  var FILES = [
+    { name: "skills.yml", rows: [
+      [" ", "web2:"],
+      ["+", "  - php"],
+      ["+", "  - laravel        # certified"],
+      ["+", "  - rpa            # offer generation, Adventus.io"],
+      ["+", "  - ai_tools"],
+      [" ", "web3:"],
+      ["+", "  - algorand_python  # PuyaPy"],
+      ["+", "  - algokit"],
+      ["+", "  - custodial_wallets"],
+      [" ", "product:"],
+      ["+", "  - enterprise_to_web3_translation"],
+      ["+", "  - technical_docs"]
+    ] },
+    { name: "status.yml", rows: [
+      [" ", "name: Meet"],
+      [" ", "based_in: Pune"],
+      ["-", "team: null"],
+      ["+", "team: your-company   # pending your merge"]
+    ] }
+  ];
+
+  // timeline (conversation) and commits tab
+  var tl = COMMITS.map(function (c) {
+    return '<div class="ev ok"><span class="yr">' + esc(c[0]) + '</span>' + esc(c[1]) + '<span class="sha">' + sha(c[1]) + '</span></div>';
+  }).join("");
+  document.getElementById("timeline").innerHTML = '<div class="ev">meet added 7 commits</div>' + tl;
+  document.getElementById("commitList").innerHTML = tl;
+
+  document.getElementById("checkList").innerHTML = CHECKS.map(function (c) {
+    return '<div class="check"><span class="tick">✓</span><div><b>' + esc(c[0]) + '</b><div class="d">' + esc(c[1]) + '</div></div><span class="t">' + esc(c[2]) + '</span></div>';
+  }).join("");
+
+  document.getElementById("diff").innerHTML = FILES.map(function (f) {
+    var add = f.rows.filter(function (r) { return r[0] === "+"; }).length, del = f.rows.filter(function (r) { return r[0] === "-"; }).length;
+    return '<div class="file"><div class="fname"><span>' + esc(f.name) + '</span><span class="stat">+' + add + ' <i>-' + del + '</i></span></div><div class="code"><table>' +
+      f.rows.map(function (r, i) {
+        var cls = r[0] === "+" ? "add" : r[0] === "-" ? "del" : "";
+        return '<tr class="' + cls + '"><td class="ln">' + (i + 1) + '</td><td class="sg">' + (r[0] === " " ? "" : r[0]) + '</td><td>' + esc(r[1]) + '</td></tr>';
+      }).join("") + '</table></div></div>';
+  }).join("");
+
+  // tabs
+  var tabs = document.querySelectorAll(".tab");
+  function show(p) {
+    tabs.forEach(function (t) { t.setAttribute("aria-selected", t.getAttribute("data-p") === p ? "true" : "false"); });
+    document.querySelectorAll(".panel").forEach(function (el) { el.classList.toggle("on", el.id === "p-" + p); });
+  }
+  tabs.forEach(function (t) { t.addEventListener("click", function () { show(t.getAttribute("data-p")); }); });
+
+  // approve
+  var approved = false;
+  document.getElementById("approveBtn").addEventListener("click", function () {
+    if (approved) return; approved = true;
+    var ev = document.createElement("div"); ev.className = "ev you"; ev.innerHTML = "<b>You</b> approved these changes";
+    document.getElementById("timeline").appendChild(ev);
+    document.getElementById("reviewer").innerHTML = 'You · <span style="color:var(--ok)">✓ approved</span>';
+    this.textContent = "Approved ✓"; this.disabled = true;
+  });
+
+  // merge
+  document.getElementById("mergeBtn").addEventListener("click", function () {
+    document.getElementById("confirm").classList.add("on");
+    document.getElementById("merge").classList.add("done");
+    var st = document.getElementById("state"); st.textContent = "● Ready to merge"; st.classList.add("merged");
+    this.textContent = "Waiting for your email";
+  });
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var b = this;
+    try {
+      navigator.clipboard.writeText("meetthosar@gmail.com").then(function () { b.textContent = "Copied"; }, function () { b.textContent = "Copy failed, select the address above"; });
+    } catch (e) { b.textContent = "Copy failed, select the address above"; }
+  });
+})();
+</script>
+</body>
+</html>

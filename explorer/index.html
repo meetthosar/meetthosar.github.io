@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meet's Block Explorer</title>
+<meta name="description" content="Meet, developer and technical product owner from Pune. Career as a block explorer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout idea: a block explorer for one person. Blocks = career, sortition = which side of Meet, mempool = enterprise problems. */
+  --bg: #edf0f4;
+  --panel: #ffffff;
+  --ink: #15213a;
+  --muted: #5a6478;
+  --line: #d3d9e2;
+  --accent: #e39a0b;
+  --accent-soft: #fdf1d8;
+  --ok: #1f8a4c;
+  --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1520; --panel: #162030; --ink: #e5eaf2; --muted: #93a0b5;
+    --line: #26324a; --accent: #f2b230; --accent-soft: #2e2512; --ok: #4cc27f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1520; --panel: #162030; --ink: #e5eaf2; --muted: #93a0b5;
+  --line: #26324a; --accent: #f2b230; --accent-soft: #2e2512; --ok: #4cc27f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--body); }
+a { color: inherit; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--mono); }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+/* Top bar */
+.bar { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; align-items: center; gap: 16px; padding-top: 10px; padding-bottom: 10px; flex-wrap: wrap; }
+.logo { font: 800 24px/1 var(--display); letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; }
+.logo b { color: var(--accent); }
+.search { flex: 1 1 260px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; background: var(--bg); }
+.search { position: relative; }
+.results { display: none; position: absolute; left: -1px; right: -1px; top: calc(100% + 6px); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.15); max-height: 60vh; overflow-y: auto; z-index: 10; }
+.results.open { display: block; }
+.results .head { font: 500 11px/1 var(--mono); color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); text-transform: uppercase; letter-spacing: .06em; }
+.results button { display: grid; grid-template-columns: 64px 1fr; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 12px; cursor: pointer; font-size: 14px; }
+.results button:hover, .results button:focus-visible { background: var(--accent-soft); outline: none; }
+.results .yr { font: 800 18px/1.1 var(--display); }
+.results .sub { display: block; font-size: 12px; color: var(--muted); }
+.results .none { padding: 12px; font-size: 14px; color: var(--muted); }
+.search input { border: 0; background: none; outline: none; width: 100%; font-family: var(--mono); font-size: 14px; }
+.chip { font: 500 12px/1 var(--mono); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--line); white-space: nowrap; }
+.chip .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; }
+.btn { cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 14px; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:hover { filter: brightness(1.15); }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; padding: 28px 0 8px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px; }
+.eyebrow { font: 500 12px/1 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+h1 { font: 800 clamp(48px, 8vw, 84px)/.9 var(--display); margin: 10px 0 6px; text-transform: uppercase; text-wrap: balance; }
+h2 { font: 800 34px/1 var(--display); text-transform: uppercase; margin: 0; text-wrap: balance; }
+.role { font-size: 18px; color: var(--muted); margin: 0 0 16px; }
+.addr { font: 400 12px/1.5 var(--mono); color: var(--muted); word-break: break-all; padding: 8px 10px; background: var(--bg); border-radius: 6px; }
+.addr small { display: block; color: var(--accent); margin-top: 4px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+.stat { border-top: 2px solid var(--ink); padding-top: 8px; }
+.stat .n { font: 800 32px/1 var(--display); font-variant-numeric: tabular-nums; }
+.stat .l { font-size: 12px; color: var(--muted); }
+
+/* Sortition */
+.sort h2 { font-size: 28px; }
+.vrf { margin: 14px 0; padding: 10px; border: 1px dashed var(--line); border-radius: 6px; font: 400 12px/1.5 var(--mono); word-break: break-all; }
+.vrf .k { color: var(--muted); }
+.vrf .hl { background: var(--accent); color: #15213a; padding: 0 2px; border-radius: 2px; }
+.persona-name { font: 800 30px/1 var(--display); text-transform: uppercase; color: var(--accent); margin: 4px 0 8px; }
+.persona ul { margin: 0; padding-left: 18px; }
+.persona li { margin: 4px 0; }
+.weights { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+.weights span { font: 500 11px/1 var(--mono); padding: 5px 7px; border-radius: 4px; background: var(--bg); color: var(--muted); }
+.weights span.on { background: var(--accent); color: #15213a; }
+
+/* Blocks */
+section { padding: 32px 0 8px; }
+.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.sec-head p { margin: 0; color: var(--muted); font-size: 14px; max-width: 60ch; }
+.chain { display: grid; gap: 12px; }
+.block { display: grid; grid-template-columns: 150px 1fr; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.block.hide { display: none; }
+.block .h { padding: 16px; border-right: 1px solid var(--line); background: var(--bg); }
+.block .h .num { font: 800 38px/1 var(--display); font-variant-numeric: tabular-nums; }
+.block .h .when { font: 400 12px/1.4 var(--mono); color: var(--muted); margin-top: 6px; }
+.block .b { padding: 16px 18px; min-width: 0; }
+.block .t { font-weight: 600; font-size: 18px; }
+.block .o { color: var(--muted); }
+.block .note { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.hashes { font: 400 11px/1.6 var(--mono); color: var(--muted); margin-top: 8px; overflow-x: auto; white-space: nowrap; }
+.txs { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+.txs li { display: grid; grid-template-columns: 74px 1fr; gap: 10px; font-size: 15px; }
+.txs .tx { font: 400 11px/1.9 var(--mono); color: var(--muted); }
+.txs li.match { background: var(--accent-soft); border-radius: 4px; }
+.block.pending { border-style: dashed; }
+.block.pending .num { color: var(--accent); }
+.pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 6px; animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+.empty { display: none; padding: 16px; color: var(--muted); font-family: var(--mono); font-size: 14px; }
+
+/* Translator */
+.tr { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.presets { display: grid; gap: 8px; margin-top: 12px; }
+.preset { text-align: left; cursor: pointer; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
+.preset[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.free { display: flex; gap: 8px; margin-top: 12px; }
+.free input { flex: 1; min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+.out .lbl { font: 500 11px/1 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 14px; }
+.out .lbl:first-child { margin-top: 0; }
+.out p { margin: 6px 0 0; }
+.out .verdict { font: 800 26px/1.05 var(--display); text-transform: uppercase; margin-top: 6px; }
+
+/* Contact */
+.contact { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.contact .big { font: 800 clamp(30px, 5vw, 46px)/1 var(--display); text-transform: uppercase; }
+footer { padding: 28px 0 40px; color: var(--muted); font-size: 13px; }
+
+/* Boring version */
+.cv { display: none; max-width: 70ch; margin: 0 auto; padding: 32px 20px 60px; font-size: 16px; }
+.cv h1 { font: 600 30px/1.2 var(--body); text-transform: none; margin: 0; }
+.cv h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 26px 0 6px; }
+.cv ul { padding-left: 18px; margin: 4px 0; }
+.cv .row { margin: 12px 0; }
+body.boring .fun { display: none; }
+body.boring .cv { display: block; }
+
+@media (max-width: 820px) {
+  .hero, .tr { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .block { grid-template-columns: 1fr; }
+  .block .h { border-right: 0; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: baseline; }
+  .txs li { grid-template-columns: 1fr; gap: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="logo">meet<b>.</b>explorer</div>
+    <div class="search">
+      <span class="mono" aria-hidden="true">&gt;</span>
+      <input id="q" type="search" placeholder="search blocks: wallet, docs, laravel, 2026" autocomplete="off" aria-controls="results">
+      <div class="results" id="results" role="listbox"></div>
+    </div>
+    <span class="chip fun"><span class="dot"></span>Pune, IN</span>
+    <button class="btn ghost" id="boringBtn" type="button">Boring version</button>
+  </div>
+</header>
+
+<main class="fun">
+  <div class="wrap">
+
+    <div class="hero">
+      <div class="card">
+        <div class="eyebrow">Account</div>
+        <h1>Meet</h1>
+        <p class="role">Developer and Technical Product Owner. Web2 and web3. Laravel full-stack since 2008, plus automation, AI tooling and Algorand.</p>
+        <div class="addr" id="addr">computing address...<small>Decorative. Not a real account. Please don't send funds.</small></div>
+        <div class="stats">
+          <div class="stat"><div class="n">2008</div><div class="l">first block</div></div>
+          <div class="stat"><div class="n" id="yrs">18</div><div class="l">years building</div></div>
+          <div class="stat"><div class="n">3</div><div class="l">wallet rollouts in production</div></div>
+          <div class="stat"><div class="n" style="color:var(--ok)">Open</div><div class="l">to the next role</div></div>
+        </div>
+      </div>
+
+      <div class="card sort" aria-live="polite">
+        <div class="eyebrow">Sortition</div>
+        <h2>Which Meet gets selected?</h2>
+        <div class="vrf" id="vrf"></div>
+        <div class="persona" id="persona"></div>
+        <div class="weights" id="weights"></div>
+        <div style="margin-top:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+          <button class="btn" id="rollBtn" type="button">Run sortition again</button>
+          <span style="font-size:12px; color:var(--muted)">SHA-256 of a random seed. Algorand's real sortition uses a VRF.</span>
+        </div>
+      </div>
+    </div>
+
+    <section id="blocks">
+      <div class="sec-head">
+        <h2>Latest blocks</h2>
+        <p>One block per role, newest first. Each block's hash is computed in your browser from its contents and the previous hash, so the chain is real even if the career is the only thing on it.</p>
+      </div>
+      <div class="chain" id="chain"></div>
+      <div class="empty" id="empty">No transactions match that search. Try "wallet", "docs" or "laravel".</div>
+    </section>
+
+    <section id="translator">
+      <div class="sec-head">
+        <h2>Enterprise to web3 translator</h2>
+        <p>My last job was taking an enterprise's problem and working out what, if anything, a blockchain should do about it. Pick a problem or type your own.</p>
+      </div>
+      <div class="tr">
+        <div class="card">
+          <div class="eyebrow">Mempool: incoming problems</div>
+          <div class="presets" id="presets"></div>
+          <form class="free" id="freeForm">
+            <label for="freeIn" class="eyebrow" style="position:absolute; left:-9999px">Your problem</label>
+            <input id="freeIn" placeholder="e.g. our users lose their keys">
+            <button class="btn" type="submit">Translate</button>
+          </form>
+        </div>
+        <div class="card out" id="out" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card contact">
+        <div>
+          <div class="eyebrow">Propose the next block</div>
+          <div class="big">Hiring? Building something?</div>
+        </div>
+        <div style="text-align:right">
+          <a class="btn" href="mailto:meetthosar@gmail.com" style="text-decoration:none; display:inline-block">Email Meet</a>
+          <div class="mono" style="font-size:13px; margin-top:8px">meetthosar@gmail.com</div>
+          <!-- Add GitHub / LinkedIn links here -->
+        </div>
+      </div>
+    </section>
+
+    <footer>One HTML file, no build step. Block hashes are real SHA-256; everything else is a joke about block explorers.</footer>
+  </div>
+</main>
+
+<article class="cv" id="cv">
+  <p><button class="btn ghost" type="button" id="funBtn">Back to the explorer</button></p>
+  <h1>Meet</h1>
+  <p>Developer and Technical Product Owner, Pune, India. <span class="mono">meetthosar@gmail.com</span></p>
+  <h3>Experience</h3>
+  <div class="row"><b>Technical Product Owner, India</b>, Algorand Foundation. Jan 2026 to Oct 2026. Official title in the final months: Integrations Specialist.
+    <ul>
+      <li>Bridge between India enterprises and developers: translated enterprise problems into web3 solutions.</li>
+      <li>Took custodial wallet infrastructure into production with Naandi; contributed to Intermezzo, the Foundation's custodial wallet product.</li>
+      <li>DevRel contributor, June to 22 Oct 2026: documentation pages for the post-quantum update and the Algorand 5.0.0 release.</li>
+    </ul></div>
+  <div class="row"><b>Engagement Support Engineer</b>, Algorand Foundation. Nov 2024 to Jan 2026.
+    <ul><li>Took custodial wallet infrastructure into production with SEWA and Mann Deshi.</li></ul></div>
+  <div class="row"><b>Senior Software Engineer</b>, Adventus.io. 2023 to 2024.
+    <ul><li>Built an RPA solution that automated offer generation.</li></ul></div>
+  <div class="row"><b>Founder</b>, Karyam. 2015 to 2020.</div>
+  <div class="row"><b>Team Lead</b>. 2011 to 2013. Led a team; client-facing work.</div>
+  <div class="row"><b>Full-stack developer</b>, PHP and Laravel. From 2008. Certified Laravel Developer.</div>
+  <h3>Skills</h3>
+  <p>Algorand Python (PuyaPy), AlgoKit, smart contracts, custodial wallet infrastructure, AI-powered tooling, PHP/Laravel, technical documentation.</p>
+  <h3>Interests</h3>
+  <p>Web2: full-stack web applications, process automation, AI-powered tools. Web3: smart contracts and wallet infrastructure.</p>
+  <h3>Education</h3>
+  <p>B.E. Computers, Shivaji University.</p>
+</article>
+
+<script>
+(function () {
+  // ---------- data (all from Meet's own record) ----------
+  var BLOCKS = [
+    { num: "2026", when: "Jan to Oct 2026", title: "Technical Product Owner, India", org: "Algorand Foundation",
+      note: "Official title in the final months: Integrations Specialist",
+      txs: [
+        "Bridge between India enterprises and developers: enterprise problems in, web3 solutions out",
+        "Custodial wallet infrastructure into production with Naandi",
+        "Contributed to Intermezzo, the Foundation's custodial wallet product",
+        "DevRel contributor, June to 22 Oct 2026: docs pages for the post-quantum update",
+        "Docs pages for the Algorand 5.0.0 protocol release"
+      ] },
+    { num: "2024", when: "Nov 2024 to Jan 2026", title: "Engagement Support Engineer", org: "Algorand Foundation",
+      txs: [
+        "Custodial wallet infrastructure into production with SEWA",
+        "Custodial wallet infrastructure into production with Mann Deshi"
+      ] },
+    { num: "2023", when: "2023 to 2024", title: "Senior Software Engineer", org: "Adventus.io",
+      txs: [ "Built an RPA solution that automated offer generation" ] },
+    { num: "2015", when: "2015 to 2020", title: "Founder", org: "Karyam",
+      txs: [ "Founded and ran Karyam" ] },
+    { num: "2011", when: "2011 to 2013", title: "Team Lead", org: "",
+      txs: [ "Led a development team", "Client-facing work" ] },
+    { num: "2008", when: "From 2008", title: "Full-stack developer", org: "PHP / Laravel",
+      txs: [ "First commit of the career", "PHP and Laravel full-stack work", "Became a Certified Laravel Developer" ] },
+    { num: "0", when: "Genesis", title: "B.E. Computers", org: "Shivaji University",
+      txs: [ "Degree in Computer Engineering" ] }
+  ];
+
+  var PERSONAS = [
+    { key: "web2", name: "The Web2 Engineer", items: [
+      "PHP and Laravel full-stack since 2008, Certified Laravel Developer",
+      "Built an RPA solution at Adventus.io that automated offer generation",
+      "Team lead with client-facing work, 2011 to 2013",
+      "Builds AI-powered tools" ] },
+    { key: "builder", name: "The Web3 Builder", items: [
+      "Smart contracts in Algorand Python (PuyaPy) with AlgoKit",
+      "Custodial wallet infrastructure, three rollouts in production" ] },
+    { key: "po", name: "The Product Owner", items: [
+      "Technical Product Owner for India Enterprises at the Algorand Foundation",
+      "Turned enterprise problems into web3 solutions developers could build",
+      "Production wallet rollouts with SEWA, Mann Deshi and Naandi",
+      "Contributed to Intermezzo, the Foundation's custodial wallet product" ] },
+    { key: "devrel", name: "The DevRel Writer", items: [
+      "DevRel team contributor, June to 22 Oct 2026",
+      "Documentation pages for the Algorand 5.0.0 protocol release",
+      "Documentation pages for the post-quantum update" ] }
+  ];
+
+  var PROBLEMS = [
+    { q: "Our members have no crypto knowledge but need an on-chain account",
+      keys: ["member", "account", "onboard", "user", "crypto", "wallet", "custod"],
+      verdict: "Custodial wallet",
+      tx: "Members get an account without ever seeing a seed phrase; the organisation holds the keys under clear rules.",
+      proof: "Shipped custodial wallet infrastructure to production with SEWA, Mann Deshi and Naandi, and contributed to Intermezzo.",
+      limit: "Custody means the organisation is trusted with keys. That is a policy decision before it is a technical one." },
+    { q: "Our users keep losing their keys",
+      keys: ["key", "seed", "lose", "lost", "recover", "password"],
+      verdict: "Custodial wallet (again)",
+      tx: "Take key management off the end user. Recovery becomes a support ticket instead of a lost account.",
+      proof: "Same production work: SEWA, Mann Deshi, Naandi, Intermezzo.",
+      limit: "You trade self-custody for convenience. Some users and regulators will care." },
+    { q: "Our staff spend hours building the same offer documents",
+      keys: ["document", "offer", "manual", "hours", "repeat", "staff", "automate", "process"],
+      verdict: "Not a blockchain problem",
+      tx: "Automate the workflow. No chain, no token, no smart contract.",
+      proof: "Built an RPA solution at Adventus.io that automated offer generation.",
+      limit: "Sometimes the honest translation is \"you don't need web3\"." },
+    { q: "We need rules that nobody can quietly change",
+      keys: ["rule", "contract", "enforce", "trust", "audit", "tamper", "change"],
+      verdict: "Smart contract",
+      tx: "Put the rule in an on-chain contract so every party can read it and nobody can edit it in a back office.",
+      proof: "Writes smart contracts in Algorand Python (PuyaPy) with AlgoKit.",
+      limit: "Immutable rules are only as good as the day they were written. Plan for upgrades." },
+    { q: "Our developers can't keep up with protocol changes",
+      keys: ["developer", "docs", "documentation", "protocol", "upgrade", "learn", "quantum"],
+      verdict: "Better documentation",
+      tx: "Clear, versioned docs pages, written alongside the release.",
+      proof: "Added documentation pages for the Algorand 5.0.0 release and the post-quantum update.",
+      limit: "Docs age fast. Someone has to own them after launch day." }
+  ];
+
+  // ---------- hashing ----------
+  function hex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join(""); }
+  function fallbackHash(s) { // FNV-1a, repeated to 64 hex chars
+    var out = "", h = 2166136261;
+    for (var r = 0; r < 8; r++) { for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i) + r; h = Math.imul(h, 16777619) >>> 0; } out += ("0000000" + h.toString(16)).slice(-8); }
+    return out;
+  }
+  function sha256(s) {
+    try {
+      if (window.crypto && crypto.subtle) return crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(hex).catch(function () { return fallbackHash(s); });
+    } catch (e) {}
+    return Promise.resolve(fallbackHash(s));
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  // ---------- account ----------
+  document.getElementById("yrs").textContent = String(new Date().getFullYear() - 2008);
+  sha256("meet.explorer").then(function (h) {
+    var A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", s = "MEET";
+    for (var i = 0; s.length < 58; i++) s += A[parseInt(h.substr((i * 2) % 62, 2), 16) % 32];
+    document.getElementById("addr").innerHTML = esc(s) + "<small>Decorative. Not a real account. Please don't send funds.</small>";
+  });
+
+  // ---------- chain ----------
+  var chainEl = document.getElementById("chain");
+  function renderChain() {
+    var ordered = BLOCKS.slice().reverse(); // genesis first, to chain hashes
+    var prev = "0".repeat(64);
+    var jobs = ordered.map(function (b) {
+      return function () {
+        return sha256(prev + JSON.stringify(b)).then(function (h) { b.prev = prev; b.hash = h; prev = h; });
+      };
+    });
+    return jobs.reduce(function (p, j) { return p.then(j); }, Promise.resolve()).then(function () {
+      var html = '<div class="block pending"><div class="h"><div class="num">' + (new Date().getFullYear()) + '+</div><div class="when"><span class="pulse"></span>pending</div></div>' +
+        '<div class="b"><div class="t">Next role</div><div class="o">Awaiting a proposer. Scroll down to propose one.</div></div></div>';
+      BLOCKS.forEach(function (b, bi) {
+        html += '<div class="block" data-i="' + bi + '"><div class="h"><div class="num">#' + esc(b.num) + '</div><div class="when">' + esc(b.when) + '<br>' + b.txs.length + ' tx</div></div>' +
+          '<div class="b"><div class="t">' + esc(b.title) + (b.org ? ' <span class="o">· ' + esc(b.org) + '</span>' : '') + '</div>' +
+          (b.note ? '<div class="note">' + esc(b.note) + '</div>' : '') +
+          '<div class="hashes">hash ' + b.hash.slice(0, 32) + '…<br>prev ' + b.prev.slice(0, 32) + '…</div>' +
+          '<ul class="txs">' + b.txs.map(function (t, ti) {
+            return '<li data-t="' + esc(t.toLowerCase() + " " + b.title.toLowerCase() + " " + b.org.toLowerCase() + " " + b.when.toLowerCase()) + '"><span class="tx">' + b.hash.slice(ti * 6, ti * 6 + 6) + '</span><span>' + esc(t) + '</span></li>';
+          }).join("") + '</ul></div></div>';
+      });
+      chainEl.innerHTML = html;
+      filter();
+    });
+  }
+
+  var q = document.getElementById("q");
+  function filter() {
+    var term = q.value.trim().toLowerCase(), any = false;
+    chainEl.querySelectorAll(".block[data-i]").forEach(function (el) {
+      var hit = false;
+      el.querySelectorAll("li").forEach(function (li) {
+        var m = term && li.getAttribute("data-t").indexOf(term) !== -1;
+        li.classList.toggle("match", !!m); if (m) hit = true;
+      });
+      el.classList.toggle("hide", !!term && !hit);
+      if (!term || hit) any = true;
+    });
+    var pend = chainEl.querySelector(".pending"); if (pend) pend.classList.toggle("hide", !!term);
+    document.getElementById("empty").style.display = any ? "none" : "block";
+  }
+  var resEl = document.getElementById("results");
+  function dropdown() {
+    var term = q.value.trim().toLowerCase();
+    if (!term) { resEl.classList.remove("open"); resEl.innerHTML = ""; return; }
+    var hits = [];
+    BLOCKS.forEach(function (b, bi) {
+      b.txs.forEach(function (t) {
+        var hay = (t + " " + b.title + " " + b.org + " " + b.when).toLowerCase();
+        if (hay.indexOf(term) !== -1) hits.push({ bi: bi, b: b, t: t });
+      });
+    });
+    resEl.innerHTML = '<div class="head">' + hits.length + ' transaction' + (hits.length === 1 ? '' : 's') + ' found</div>' +
+      (hits.length ? hits.map(function (h) {
+        return '<button type="button" data-bi="' + h.bi + '"><span class="yr">#' + esc(h.b.num) + '</span><span>' + esc(h.t) + '<span class="sub">' + esc(h.b.title + (h.b.org ? ' · ' + h.b.org : '')) + '</span></span></button>';
+      }).join("") : '<div class="none">Nothing on-chain for that. Try "wallet", "docs", "laravel" or "2026".</div>');
+    resEl.classList.add("open");
+  }
+  resEl.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-bi]"); if (!btn) return;
+    resEl.classList.remove("open");
+    var el = chainEl.querySelector('.block[data-i="' + btn.getAttribute("data-bi") + '"]');
+    if (el) el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  });
+  q.addEventListener("input", function () {
+    if (document.body.classList.contains("boring")) setBoring(false);
+    filter(); dropdown();
+  });
+  q.addEventListener("focus", dropdown);
+  q.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { resEl.classList.remove("open"); }
+    if (e.key === "Enter") { var f = resEl.querySelector("button[data-bi]"); if (f) f.click(); }
+  });
+  document.addEventListener("click", function (e) { if (!e.target.closest(".search")) resEl.classList.remove("open"); });
+
+  // ---------- sortition ----------
+  var vrfEl = document.getElementById("vrf"), personaEl = document.getElementById("persona"), weightsEl = document.getElementById("weights");
+  function roll(seed) {
+    seed = seed || (Date.now().toString(36) + Math.random().toString(36).slice(2));
+    sha256(seed).then(function (h) {
+      var byte = parseInt(h.slice(0, 2), 16), idx = byte % PERSONAS.length, p = PERSONAS[idx];
+      vrfEl.innerHTML = '<span class="k">seed&nbsp;&nbsp; </span>' + esc(seed) + '<br><span class="k">output </span><span class="hl">' + h.slice(0, 2) + '</span>' + h.slice(2, 40) + '…<br><span class="k">0x' + h.slice(0, 2) + ' = ' + byte + ', ' + byte + ' mod ' + PERSONAS.length + ' = ' + idx + '</span>';
+      personaEl.innerHTML = '<div class="persona-name">' + esc(p.name) + '</div><ul>' + p.items.map(function (i) { return '<li>' + esc(i) + '</li>'; }).join("") + '</ul>';
+      weightsEl.innerHTML = PERSONAS.map(function (x, i) { return '<span class="' + (i === idx ? "on" : "") + '">' + i + ' ' + esc(x.name.replace("The ", "")) + '</span>'; }).join("");
+    });
+  }
+  document.getElementById("rollBtn").addEventListener("click", function () { roll(); });
+
+  // ---------- translator ----------
+  var presetsEl = document.getElementById("presets"), outEl = document.getElementById("out");
+  function showProblem(i, asked) {
+    var p = PROBLEMS[i];
+    presetsEl.querySelectorAll(".preset").forEach(function (b, bi) { b.setAttribute("aria-pressed", bi === i ? "true" : "false"); });
+    outEl.innerHTML = '<div class="lbl">Problem</div><p>' + esc(asked || p.q) + '</p>' +
+      '<div class="lbl">Translation</div><div class="verdict">' + esc(p.verdict) + '</div><p>' + esc(p.tx) + '</p>' +
+      '<div class="lbl">Where I have done it</div><p>' + esc(p.proof) + '</p>' +
+      '<div class="lbl">The catch</div><p>' + esc(p.limit) + '</p>';
+  }
+  PROBLEMS.forEach(function (p, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "preset"; b.textContent = p.q; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function () { showProblem(i); });
+    presetsEl.appendChild(b);
+  });
+  document.getElementById("freeForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var text = document.getElementById("freeIn").value.trim(); if (!text) return;
+    var low = text.toLowerCase(), best = -1, score = 0;
+    PROBLEMS.forEach(function (p, i) {
+      var s = p.keys.filter(function (k) { return low.indexOf(k) !== -1; }).length;
+      if (s > score) { score = s; best = i; }
+    });
+    if (best >= 0) { showProblem(best, text); return; }
+    presetsEl.querySelectorAll(".preset").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+    outEl.innerHTML = '<div class="lbl">Problem</div><p>' + esc(text) + '</p><div class="lbl">Translation</div><div class="verdict">Unconfirmed transaction</div>' +
+      '<p>This one isn\'t in my mempool yet. Email it to me and I\'ll tell you honestly whether a blockchain belongs anywhere near it.</p>' +
+      '<p class="mono" style="font-size:13px">meetthosar@gmail.com</p>';
+  });
+
+  // ---------- boring mode ----------
+  function setBoring(on) {
+    document.body.classList.toggle("boring", on);
+    document.getElementById("boringBtn").textContent = on ? "Fun version" : "Boring version";
+    try { history.replaceState(null, "", on ? "#cv" : location.pathname + location.search); } catch (e) {}
+    window.scrollTo(0, 0);
+  }
+  document.getElementById("boringBtn").addEventListener("click", function () { setBoring(!document.body.classList.contains("boring")); });
+  document.getElementById("funBtn").addEventListener("click", function () { setBoring(false); });
+  function fromHash() { if ((location.hash === "#cv") !== document.body.classList.contains("boring")) setBoring(location.hash === "#cv"); }
+  window.addEventListener("hashchange", fromHash);
+
+  // ---------- boot ----------
+  renderChain();
+  roll("meet-2011");
+  showProblem(0);
+  fromHash();
+})();
+</script>
+</body>
+</html>
